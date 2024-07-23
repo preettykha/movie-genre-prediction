@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 # Import necessary libraries
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,9 +10,10 @@ from sklearn.metrics import accuracy_score
 import streamlit as st
 from fuzzywuzzy import process
 
+# Load the dataset with a relative path
 # Load the dataset
-
 movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
@@ -123,14 +118,6 @@ y_pred = pipeline.predict(X_test['title'])
 accuracy = accuracy_score(y_test, y_pred)
 st.write(f'Accuracy: {accuracy}')
 
-
-# In[12]:
-
-
-
-
-
-# In[ ]:
 
 
 
