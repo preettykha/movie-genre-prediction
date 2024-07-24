@@ -136,8 +136,7 @@ plt.ylabel('Actual')
 st.pyplot(fig5)
 
 # Streamlit custom styling
-st.markdown(
-    """
+st.markdown("""
     <style>
     .main {
         background-color: #f5f5f5;
@@ -151,6 +150,6 @@ st.markdown(
         color: black;
     }
     </style>
-    """, unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
+
 
