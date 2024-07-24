@@ -1,17 +1,18 @@
 # Import necessary libraries
-import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import streamlit as st
 from fuzzywuzzy import process
 
 # Load the dataset
-movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+movies = pd.read_csv("C:/Users/Nanthini/Downloads/archive (1)/movies_metadata.csv", low_memory=False)
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
@@ -41,25 +42,58 @@ y = label_encoder.fit_transform(movies['genre'])
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(movies[['title']], y, test_size=0.2, random_state=42)
 
-# Create a pipeline for vectorizing the titles and training the logistic regression model
-pipeline = Pipeline([
+# Create pipelines for vectorizing the titles and training the models
+logistic_pipeline = Pipeline([
     ('vectorizer', CountVectorizer()),
     ('classifier', LogisticRegression(max_iter=1000))
 ])
 
-# Train the model
-pipeline.fit(X_train['title'], y_train)
+decision_tree_pipeline = Pipeline([
+    ('vectorizer', CountVectorizer()),
+    ('classifier', DecisionTreeClassifier())
+])
+
+# Define parameter grids for hyper-parameter tuning
+logistic_param_grid = {
+    'classifier__C': [0.01, 0.1, 1, 10, 100],
+    'classifier__penalty': ['l1', 'l2']
+}
+
+decision_tree_param_grid = {
+    'classifier__max_depth': [5, 10, 15, 20, 25],
+    'classifier__min_samples_split': [2, 5, 10]
+}
+
+# Perform grid search for hyper-parameter tuning
+logistic_grid_search = GridSearchCV(logistic_pipeline, logistic_param_grid, cv=5, n_jobs=-1)
+logistic_grid_search.fit(X_train['title'], y_train)
+
+decision_tree_grid_search = GridSearchCV(decision_tree_pipeline, decision_tree_param_grid, cv=5, n_jobs=-1)
+decision_tree_grid_search.fit(X_train['title'], y_train)
+
+# Select the best models
+best_logistic_model = logistic_grid_search.best_estimator_
+best_decision_tree_model = decision_tree_grid_search.best_estimator_
 
 # Function to find the closest match for a given title in the test set
 def find_closest_match(title, choices):
     match = process.extractOne(title, choices)
     return match[0] if match[1] > 75 else None
 
-# Function to predict genres
-def predict_genre(title):
+# Function to predict genres using the best logistic model
+def predict_genre_logistic(title):
     closest_title = find_closest_match(title, X_test['title'].tolist())
     if closest_title:
-        predicted_genre = pipeline.predict([closest_title])
+        predicted_genre = best_logistic_model.predict([closest_title])
+        return label_encoder.inverse_transform(predicted_genre)[0]
+    else:
+        return "Movie not found"
+
+# Function to predict genres using the best decision tree model
+def predict_genre_decision_tree(title):
+    closest_title = find_closest_match(title, X_test['title'].tolist())
+    if closest_title:
+        predicted_genre = best_decision_tree_model.predict([closest_title])
         return label_encoder.inverse_transform(predicted_genre)[0]
     else:
         return "Movie not found"
@@ -104,17 +138,34 @@ test_movies_df = X_test.head(100)
 test_movies_df['genres'] = [movies.loc[movies['title'] == title]['genres'].values[0] for title in test_movies_df['title']]
 st.write(test_movies_df)
 
-# Genre prediction
-st.write("### Predict Movie Genre")
-movie_title = st.text_input("Enter the movie title:")
-if movie_title:
-    genre = predict_genre(movie_title)
-    st.write(f"Genres for '{movie_title}': {genre}")
+# Genre prediction using logistic regression
+st.write("### Predict Movie Genre using Logistic Regression")
+movie_title_logistic = st.text_input("Enter the movie title (Logistic Regression):")
+if movie_title_logistic:
+    genre_logistic = predict_genre_logistic(movie_title_logistic)
+    st.write(f"Genres for '{movie_title_logistic}': {genre_logistic}")
 
-# Display the accuracy
-y_pred = pipeline.predict(X_test['title'])
-accuracy = accuracy_score(y_test, y_pred)
-st.write(f'Accuracy: {accuracy}')
+# Genre prediction using decision tree
+st.write("### Predict Movie Genre using Decision Tree")
+movie_title_decision_tree = st.text_input("Enter the movie title (Decision Tree):")
+if movie_title_decision_tree:
+    genre_decision_tree = predict_genre_decision_tree(movie_title_decision_tree)
+    st.write(f"Genres for '{movie_title_decision_tree}': {genre_decision_tree}")
 
+# Display the accuracy of both models
+st.write("### Model Accuracy")
+y_pred_logistic = best_logistic_model.predict(X_test['title'])
+y_pred_decision_tree = best_decision_tree_model.predict(X_test['title'])
+accuracy_logistic = accuracy_score(y_test, y_pred_logistic)
+accuracy_decision_tree = accuracy_score(y_test, y_pred_decision_tree)
+st.write(f'Accuracy (Logistic Regression): {accuracy_logistic}')
+st.write(f'Accuracy (Decision Tree): {accuracy_decision_tree}')
 
+# Display additional evaluation metrics for both models
+st.write("### Logistic Regression Evaluation Metrics")
+st.write(confusion_matrix(y_test, y_pred_logistic))
+st.write(classification_report(y_test, y_pred_logistic, target_names=label_encoder.classes_))
 
+st.write("### Decision Tree Evaluation Metrics")
+st.write(confusion_matrix(y_test, y_pred_decision_tree))
+st.write(classification_report(y_test, y_pred_decision_tree, target_names=label_encoder.classes_))
