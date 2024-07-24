@@ -12,8 +12,7 @@ import streamlit as st
 from fuzzywuzzy import process
 
 # Load the dataset
-movies = pd.read_csv("C:/Users/Nanthini/Downloads/archive (1)/movies_metadata.csv", low_memory=False)
-
+movies = pd.read_csv("movies_metadata.csv", low_memory=False)
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
 existing_columns_to_drop = [col for col in columns_to_drop if col in movies.columns]
