@@ -137,6 +137,26 @@ ax3.set_xlabel('Genre')
 ax3.set_ylabel('Frequency')
 st.pyplot(fig3)
 
+# Confusion Matrix for Logistic Regression
+st.write("Confusion Matrix - Logistic Regression")
+fig4, ax4 = plt.subplots(figsize=(10, 6))
+conf_matrix_logistic = confusion_matrix(y_test, y_pred_logistic)
+cax4 = ax4.matshow(conf_matrix_logistic, cmap='coolwarm')
+fig4.colorbar(cax4)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+st.pyplot(fig4)
+
+# Confusion Matrix for Decision Tree
+st.write("Confusion Matrix - Decision Tree")
+fig5, ax5 = plt.subplots(figsize=(10, 6))
+conf_matrix_tree = confusion_matrix(y_test, y_pred_tree)
+cax5 = ax5.matshow(conf_matrix_tree, cmap='coolwarm')
+fig5.colorbar(cax5)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+st.pyplot(fig5)
+
 # Streamlit custom styling
 st.markdown("""
     <style>
@@ -153,3 +173,5 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+
