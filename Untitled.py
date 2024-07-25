@@ -10,6 +10,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
 from fuzzywuzzy import process
+import Levenshtein
+
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
@@ -62,7 +64,7 @@ pipeline_tree.fit(X_train['title'], y_train)
 
 # Function to find the closest match for a given title in the test set
 def find_closest_match(title, choices):
-    match = process.extractOne(title, choices)
+    match = process.extractOne(title, choices, scorer=fuzz.ratio)
     return match[0] if match[1] > 75 else None
 
 # Function to predict genres
@@ -83,11 +85,13 @@ st.title('Movie Data Analysis and Genre Prediction')
 st.write("### Sample of Movies Data")
 st.write(movies.head())
 
+
 # Display the 100 randomly picked test movies
 st.write("### List of Test Movies")
-test_movies_df = X_test.head(100)
-test_movies_df['genres'] = [movies.loc[movies['title'] == title]['genres'].values[0] for title in test_movies_df['title']]
+test_movies_df = X_test.head(100).copy()  # Make a copy to avoid the warning
+test_movies_df['genres'] = [movies.loc[movies['title'] == title, 'genres'].values[0] for title in test_movies_df['title']]
 st.write(test_movies_df)
+
 
 # Genre prediction
 st.write("### Predict Movie Genre")
@@ -171,6 +175,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
