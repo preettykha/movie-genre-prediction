@@ -1,3 +1,4 @@
+# Import necessary libraries
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,23 +15,35 @@ import json
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
-# Caching the data loading to speed up
-@st.cache_data
-def load_data():
-    movies = pd.read_csv("movies_metadata.csv", low_memory=False)
-    columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
-    movies = movies.drop(columns=columns_to_drop, axis=1)
-    movies['popularity'] = pd.to_numeric(movies['popularity'], errors='coerce')
-    movies['budget'] = pd.to_numeric(movies['budget'].str.replace(',', ''), errors='coerce')
-    movies['revenue'] = pd.to_numeric(movies['revenue'], errors='coerce')
-    movies['runtime'] = pd.to_numeric(movies['runtime'], errors='coerce')
-    movies = movies.dropna(subset=['popularity', 'budget', 'revenue', 'runtime', 'vote_average'])
-    movies['genres'] = movies['genres'].apply(lambda x: [genre['name'] for genre in json.loads(x)] if pd.notna(x) else [])
-    movies = movies[['title', 'genres', 'popularity', 'budget', 'revenue', 'runtime', 'vote_average']]
-    movies['genre'] = movies['genres'].apply(lambda x: x[0] if len(x) > 0 else 'Unknown')
-    return movies
+# Load the dataset
+movies = pd.read_csv("movies_metadata.csv", low_memory=False)
 
-movies = load_data()
+# Drop unnecessary columns
+columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
+movies = movies.drop(columns=columns_to_drop, axis=1)
+
+# Ensure all numeric columns are correctly typed
+movies['popularity'] = pd.to_numeric(movies['popularity'], errors='coerce')
+movies['budget'] = pd.to_numeric(movies['budget'].str.replace(',', ''), errors='coerce')
+movies['revenue'] = pd.to_numeric(movies['revenue'], errors='coerce')
+movies['runtime'] = pd.to_numeric(movies['runtime'], errors='coerce')
+
+# Drop rows with NaN values
+movies = movies.dropna(subset=['popularity', 'budget', 'revenue', 'runtime', 'vote_average'])
+
+# Extract genres and titles
+def extract_genres(genres_str):
+    try:
+        genres_list = json.loads(genres_str)
+        return [genre['name'] for genre in genres_list]
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+movies['genres'] = movies['genres'].apply(extract_genres)
+movies = movies[['title', 'genres', 'popularity', 'budget', 'revenue', 'runtime', 'vote_average']]
+
+# Use the first genre as the target variable
+movies['genre'] = movies['genres'].apply(lambda x: x[0] if len(x) > 0 else 'Unknown')
 
 # Encode the genre labels
 label_encoder = LabelEncoder()
@@ -70,6 +83,7 @@ def predict_genre(title, model):
         return "Movie not found"
 
 # Streamlit part
+
 # Title of the app
 st.title('Movie Data Analysis and Genre Prediction')
 
