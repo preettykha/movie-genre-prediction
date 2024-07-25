@@ -95,7 +95,7 @@ st.write(test_movies_df)
 
 # Genre prediction
 st.write("### Predict Movie Genre")
-movie_title = st.text_input("Enter the movie title:")
+movie_title = st.text_input("Enter the movie title:", key="movie_title", autocomplete="on")
 if movie_title:
     genre_logistic = predict_genre(movie_title, pipeline_logistic)
     genre_tree = predict_genre(movie_title, pipeline_tree)
