@@ -1,5 +1,7 @@
+
+streamlit
 pandas
 matplotlib
 scikit-learn
-streamlit
 fuzzywuzzy
+python-Levenshtein
