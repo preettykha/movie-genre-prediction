@@ -9,8 +9,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
-from fuzzywuzzy import process
-import Levenshtein
+from fuzzywuzzy import fuzz, process
+
 
 
 # Set Streamlit page configuration
