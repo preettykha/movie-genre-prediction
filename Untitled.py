@@ -1,4 +1,3 @@
-# Import necessary libraries
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,34 +9,28 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
 from fuzzywuzzy import fuzz, process
-
-
+import json
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
-# Load the dataset
-movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+# Caching the data loading to speed up
+@st.cache_data
+def load_data():
+    movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+    columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
+    movies = movies.drop(columns=columns_to_drop, axis=1)
+    movies['popularity'] = pd.to_numeric(movies['popularity'], errors='coerce')
+    movies['budget'] = pd.to_numeric(movies['budget'].str.replace(',', ''), errors='coerce')
+    movies['revenue'] = pd.to_numeric(movies['revenue'], errors='coerce')
+    movies['runtime'] = pd.to_numeric(movies['runtime'], errors='coerce')
+    movies = movies.dropna(subset=['popularity', 'budget', 'revenue', 'runtime', 'vote_average'])
+    movies['genres'] = movies['genres'].apply(lambda x: [genre['name'] for genre in json.loads(x)] if pd.notna(x) else [])
+    movies = movies[['title', 'genres', 'popularity', 'budget', 'revenue', 'runtime', 'vote_average']]
+    movies['genre'] = movies['genres'].apply(lambda x: x[0] if len(x) > 0 else 'Unknown')
+    return movies
 
-# Drop unnecessary columns
-columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
-movies = movies.drop(columns=columns_to_drop, axis=1)
-
-# Ensure all numeric columns are correctly typed
-movies['popularity'] = pd.to_numeric(movies['popularity'], errors='coerce')
-movies['budget'] = pd.to_numeric(movies['budget'].str.replace(',', ''), errors='coerce')
-movies['revenue'] = pd.to_numeric(movies['revenue'], errors='coerce')
-movies['runtime'] = pd.to_numeric(movies['runtime'], errors='coerce')
-
-# Drop rows with NaN values
-movies = movies.dropna(subset=['popularity', 'budget', 'revenue', 'runtime', 'vote_average'])
-
-# Extract genres and titles
-movies['genres'] = movies['genres'].apply(lambda x: [genre['name'] for genre in eval(x)] if pd.notna(x) else [])
-movies = movies[['title', 'genres', 'popularity', 'budget', 'revenue', 'runtime', 'vote_average']]
-
-# Use the first genre as the target variable
-movies['genre'] = movies['genres'].apply(lambda x: x[0] if len(x) > 0 else 'Unknown')
+movies = load_data()
 
 # Encode the genre labels
 label_encoder = LabelEncoder()
@@ -77,7 +70,6 @@ def predict_genre(title, model):
         return "Movie not found"
 
 # Streamlit part
-
 # Title of the app
 st.title('Movie Data Analysis and Genre Prediction')
 
@@ -85,13 +77,11 @@ st.title('Movie Data Analysis and Genre Prediction')
 st.write("### Sample of Movies Data")
 st.write(movies.head())
 
-
 # Display the 100 randomly picked test movies
 st.write("### List of Test Movies")
 test_movies_df = X_test.head(100).copy()  # Make a copy to avoid the warning
 test_movies_df['genres'] = [movies.loc[movies['title'] == title, 'genres'].values[0] for title in test_movies_df['title']]
 st.write(test_movies_df)
-
 
 # Genre prediction
 st.write("### Predict Movie Genre")
@@ -175,7 +165,3 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-
-
-
