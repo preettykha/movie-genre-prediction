@@ -10,7 +10,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
 from fuzzywuzzy import fuzz, process
-import json
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
@@ -32,14 +31,7 @@ movies['runtime'] = pd.to_numeric(movies['runtime'], errors='coerce')
 movies = movies.dropna(subset=['popularity', 'budget', 'revenue', 'runtime', 'vote_average'])
 
 # Extract genres and titles
-def extract_genres(genres_str):
-    try:
-        genres_list = json.loads(genres_str)
-        return [genre['name'] for genre in genres_list]
-    except (json.JSONDecodeError, TypeError):
-        return []
-
-movies['genres'] = movies['genres'].apply(extract_genres)
+movies['genres'] = movies['genres'].apply(lambda x: [genre['name'] for genre in eval(x)] if pd.notna(x) else [])
 movies = movies[['title', 'genres', 'popularity', 'budget', 'revenue', 'runtime', 'vote_average']]
 
 # Use the first genre as the target variable
@@ -51,6 +43,12 @@ y = label_encoder.fit_transform(movies['genre'])
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(movies[['title']], y, test_size=0.2, random_state=42)
+
+# Debugging information
+st.write("Unique genres in training set:", pd.Series(y_train).unique())
+st.write("Shape of the original dataset:", movies.shape)
+st.write("First few rows of the dataset:", movies.head())
+st.write("Distribution of genres:", movies['genre'].value_counts())
 
 # Create a pipeline for vectorizing the titles and training the logistic regression model
 pipeline_logistic = Pipeline([
