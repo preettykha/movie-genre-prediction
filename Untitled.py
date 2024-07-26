@@ -13,7 +13,8 @@ st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
 
 
-movies = load_data()
+movies =pd.read_csv("movies_metadata.csv")
+ 
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
