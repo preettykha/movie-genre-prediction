@@ -11,14 +11,19 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
 from fuzzywuzzy import fuzz, process
 
-# Clear the Streamlit cache
-st.cache_data.clear()
+# Clear the Streamlit cache if needed
+if st.button("Clear Cache"):
+    st.cache_data.clear()
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
 # Load the dataset
-movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+@st.cache_data
+def load_data():
+    return pd.read_csv("movies_metadata.csv", low_memory=False)
+
+movies = load_data()
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
