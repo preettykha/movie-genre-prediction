@@ -14,16 +14,8 @@ from fuzzywuzzy import fuzz, process
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
-# Clear the Streamlit cache if needed
-if st.button("Clear Cache"):
-    st.cache_data.clear()
-
 # Load the dataset
-@st.cache_data
-def load_data():
-    return pd.read_csv("movies_metadata.csv", low_memory=False)
-
-movies = load_data()
+movies = pd.read_csv("movies_metadata.csv", low_memory=False)
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
