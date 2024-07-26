@@ -1,12 +1,12 @@
+# Import necessary libraries
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import pickle
+import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from fuzzywuzzy import fuzz, process
 from sklearn.model_selection import train_test_split
-
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
@@ -43,10 +43,10 @@ X_train, X_test, y_train, y_test = train_test_split(movies[['title']], y, test_s
 
 # Load the pre-trained models
 with open("pipeline_logistic.pkl", "rb") as f:
-    pipeline_logistic = pickle.load(f)
+    pipeline_logistic = joblib.load(f)
 
 with open("pipeline_tree.pkl", "rb") as f:
-    pipeline_tree = pickle.load(f)
+    pipeline_tree = joblib.load(f)
 
 # Function to find the closest match for a given title in the test set
 def find_closest_match(title, choices):
@@ -159,5 +159,3 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-
