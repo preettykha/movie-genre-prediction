@@ -5,5 +5,5 @@ matplotlib
 scikit-learn
 fuzzywuzzy
 python-Levenshtein
-
+joblib
 
