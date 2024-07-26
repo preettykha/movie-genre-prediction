@@ -11,12 +11,12 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix
 from fuzzywuzzy import fuzz, process
 
+# Set Streamlit page configuration
+st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
+
 # Clear the Streamlit cache if needed
 if st.button("Clear Cache"):
     st.cache_data.clear()
-
-# Set Streamlit page configuration
-st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
 # Load the dataset
 @st.cache_data
