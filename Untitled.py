@@ -9,7 +9,7 @@ from fuzzywuzzy import fuzz, process
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
 # Load the dataset
-movies = pd.read_csv("https://path_to_your_file/movies_metadata.csv", low_memory=False)
+movies = pd.read_csv("movies_metadata.csv", low_memory=False)
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
