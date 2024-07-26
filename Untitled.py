@@ -5,6 +5,8 @@ import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from fuzzywuzzy import fuzz, process
+from sklearn.model_selection import train_test_split
+
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
