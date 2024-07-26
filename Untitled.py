@@ -11,12 +11,7 @@ from sklearn.model_selection import train_test_split
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
-# Function to load the dataset from a URL (Google Drive link)
-@st.cache_data
-def load_data():
-    url = 'YOUR_GOOGLE_DRIVE_LINK_HERE'
-    df = pd.read_csv(url, low_memory=False)
-    return df
+
 
 movies = load_data()
 
