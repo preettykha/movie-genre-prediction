@@ -11,8 +11,14 @@ from sklearn.model_selection import train_test_split
 # Set Streamlit page configuration
 st.set_page_config(page_title="Movie Genre Prediction", page_icon="🎬")
 
-# Load the dataset
-movies = pd.read_csv("movies_metadata.csv", low_memory=False)
+# Function to load the dataset from a URL (Google Drive link)
+@st.cache_data
+def load_data():
+    url = 'YOUR_GOOGLE_DRIVE_LINK_HERE'
+    df = pd.read_csv(url, low_memory=False)
+    return df
+
+movies = load_data()
 
 # Drop unnecessary columns
 columns_to_drop = ['homepage', 'poster_path', 'overview', 'tagline', 'status', 'original_language', 'spoken_languages']
@@ -42,11 +48,8 @@ y = label_encoder.fit_transform(movies['genre'])
 X_train, X_test, y_train, y_test = train_test_split(movies[['title']], y, test_size=0.2, random_state=42)
 
 # Load the pre-trained models
-with open("pipeline_logistic.pkl", "rb") as f:
-    pipeline_logistic = joblib.load(f)
-
-with open("pipeline_tree.pkl", "rb") as f:
-    pipeline_tree = joblib.load(f)
+pipeline_logistic = joblib.load("pipeline_logistic.pkl")
+pipeline_tree = joblib.load("pipeline_tree.pkl")
 
 # Function to find the closest match for a given title in the test set
 def find_closest_match(title, choices):
@@ -159,3 +162,4 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
